@@ -6,18 +6,23 @@ function SingleFunctionView(props) {
   const { data, contract } = props;
   const [result, setResult] = useState(null);
   const [isLoading, setLoading] = useState(false);
-  const [text, setText] = useState(null);
+  const textArray = []
   if (data.type !== "function") {
     return <></>;
+  }
+
+  const setValue = (value,index)=>{
+    textArray[index] =value
+    console.log(textArray)
+    
   }
 
   const callFunction = async (name, args) => {
     setLoading(true)
     setResult(null)
     const func = contract[name];
-    console.log(args)
     
-    const argsArray =args?args.split(','):[]
+    const argsArray =args?args:[]
     const result = await func(...argsArray);
     if (result._isBigNumber) {
       const numberResult = h2d(result._hex);
@@ -44,22 +49,21 @@ function SingleFunctionView(props) {
           </Grid>
           <Grid item sm={6}>
             {data.inputs && data.inputs.length > 0 ? (
-              <TextField
-                id="outlined-basic"
-                label={(() => {
-                  const values = data.inputs.map((data) => {
-                    return data.name + ` (${data.type})`;
-                  });
-                  return values.join(",");
-                })()}
-                style={{ width: "100%" }}
-                onChange={(event) => {
-                  setText(event.target.value);
-                }}
-              />
+              data.inputs.map((data,index) => {
+                return (<TextField
+                  id="outlined-basic"
+                  label={data.name + ` (${data.type})`}
+                  style={{ width: "100%" }}
+                  onChange={(event) => {
+                    setValue(event.target.value,index);
+                  }}
+                />)
+              })
+            
             ) : (
               <p style={{ textAlign: "left" }}>Getter function</p>
             )}
+           
           </Grid>
           <Grid item sm={3}>
             <Button
@@ -67,7 +71,7 @@ function SingleFunctionView(props) {
               color="primary"
               style={{ marginTop: 30 }}
               onClick={() => {
-                callFunction(data.name,text);
+                callFunction(data.name,textArray);
               }}
             >
               Call
